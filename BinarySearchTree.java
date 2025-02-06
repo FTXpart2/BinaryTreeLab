@@ -1,26 +1,21 @@
 import java.lang.Comparable;
 import java.awt.Graphics;
-
 public class BinarySearchTree<E extends Comparable> {
   private Node<E> root;
-
   public BinarySearchTree() {
     root = null;
   }
-
   public Node<E> getRoot() {
     return root;
   }
-
   public void add(E data) {
     if (root == null) {
       root = new Node<E>(data);
       return;
     }
-
     add(root, data);
+    balance();
   }
-
   public void add(Node<E> node, E data) {
     if (node.get().compareTo(data) > 0) {
       if (node.getLeft() != null) {
@@ -40,13 +35,11 @@ public class BinarySearchTree<E extends Comparable> {
       }
     }
   }
-
   public boolean contains(E data) {
     if (root == null)
       return false;
     return contains(root, data);
   }
-
   public boolean contains(Node<E> node, E data) {
     if (node.get().compareTo(data) > 0) {
       if (node.getLeft() != null) {
@@ -64,119 +57,99 @@ public class BinarySearchTree<E extends Comparable> {
       return true;
     }
   }
-
   public String toString() {
     return InOrderString(root);
   }
-
   public String InOrderString(Node<E> node) {
     if (node == null)
       return "";
-
     String str = "";
     str += InOrderString(node.getLeft());
-    str += node.get() + " ";
+    str += "(" + node.get() + " : " + ((node.getParent() == null) ? " " : node.getParent().get()) + ") ";
     str += InOrderString(node.getRight());
     return str;
   }
-
   public int getHeight() {
     if (root == null) {
       return 0;
     }
     return getHeight(root);
   }
-
   private int getHeight(Node<E> node) {
     if (node == null) {
       return -1;
     }
-
     int leftHeight = getHeight(node.getLeft());
     int rightHeight = getHeight(node.getRight());
-
     if (leftHeight > rightHeight) {
       return leftHeight + 1;
     }
-
     return rightHeight + 1;
   }
-
   public int getLevel() {
     return getHeight(root) + 1;
   }
-
   public void rotateRight(Node<E> node) {
     Node<E> center = node.getLeft();
-
     node.setRight(null);
     node.setLeft(null);
-
     center.setRight(node);
-
     Node<E> parent = node.getParent();
+    node.setParent(center);
     if (parent == null) {
       root = center;
+      center.setParent(null);
       return;
     } else if (node == parent.getLeft()) {
       parent.setLeft(center);
+      center.setParent(parent);
     } else {
       parent.setRight(center);
+      center.setParent(parent);
     }
   }
-
   public void rotateLeft(Node<E> node) {
     Node<E> center = node.getRight();
-
     node.setRight(null);
     node.setLeft(null);
-
     center.setLeft(node);
-
     Node<E> parent = node.getParent();
-
+    node.setParent(center);
     if (parent == null) {
       root = center;
+      center.setParent(null);
       return;
     } else if (node == parent.getLeft()) {
       parent.setLeft(center);
+      center.setParent(parent);
     } else {
       parent.setRight(center);
+      center.setParent(parent);
     }
   }
-
   public boolean isLeafNode(Node<E> node) {
     return (node.getLeft() == null && node.getRight() == null);
   }
-
   public void balance() {
     balance(root);
   }
-
   private void balance(Node<E> node) {
     if (node == null) {
       return;
     }
-
     case1ALeft(node);
     case1ARight(node);
-
     case1BLeft(node);
     case1BRight(node);
-
     case2ALeft(node);
     case2ARight(node);
-
     case2BLeft(node);
     case2BRight(node);
-
     case2CLeft(node);
     case2CRight(node);
-
     balance(node.getLeft());
     balance(node.getRight());
   }
-
   public void case1ALeft(Node<E> node) {
     if (node.getRight() == null && node.getLeft() != null &&
         node.getLeft().getRight() == null && node.getLeft().getLeft() != null &&
@@ -184,7 +157,6 @@ public class BinarySearchTree<E extends Comparable> {
       rotateRight(node);
     }
   }
-
   public void case1ARight(Node<E> node) {
     if (node.getLeft() == null && node.getRight() != null &&
         node.getRight().getLeft() == null && node.getRight().getRight() != null &&
@@ -192,7 +164,6 @@ public class BinarySearchTree<E extends Comparable> {
       rotateLeft(node);
     }
   }
-
   public void case1BLeft(Node<E> node) {
     if (node.getRight() == null && node.getLeft() != null &&
         node.getLeft().getLeft() == null && node.getLeft().getRight() != null &&
@@ -201,7 +172,6 @@ public class BinarySearchTree<E extends Comparable> {
       rotateRight(node);
     }
   }
-
   public void case1BRight(Node<E> node) {
     if (node.getLeft() == null && node.getRight() != null &&
         node.getRight().getRight() == null && node.getRight().getLeft() != null &&
@@ -210,27 +180,44 @@ public class BinarySearchTree<E extends Comparable> {
       rotateLeft(node);
     }
   }
-
   public void case2ALeftAction(Node<E> node) {
     Node<E> center = node.getLeft();
     node.setLeft(center.getRight());
+    center.getRight().setParent(node);
     center.setRight(node);
-
-    if (root == node) {
+    Node<E> parent = node.getParent();
+    node.setParent(center);
+    if (parent == null) {
       root = center;
+      center.setParent(null);
+      return;
+    } else if (node == parent.getLeft()) {
+      parent.setLeft(center);
+      center.setParent(parent);
+    } else {
+      parent.setRight(center);
+      center.setParent(parent);
     }
   }
-
   public void case2ARightAction(Node<E> node) {
     Node<E> center = node.getRight();
     node.setRight(center.getLeft());
+    center.getLeft().setParent(node);
     center.setLeft(node);
-
-    if (root == node) {
+    Node<E> parent = node.getParent();
+    node.setParent(center);
+    if (parent == null) {
       root = center;
+      center.setParent(null);
+      return;
+    } else if (node == parent.getLeft()) {
+      parent.setLeft(center);
+      center.setParent(parent);
+    } else {
+      parent.setRight(center);
+      center.setParent(parent);
     }
   }
-
   public void case2ARight(Node<E> node) {
     if (node.getLeft() != null && isLeafNode(node.getLeft()) &&
         node.getRight() != null && node.getRight().getLeft() != null &&
@@ -240,7 +227,6 @@ public class BinarySearchTree<E extends Comparable> {
       case2ARightAction(node);
     }
   }
-
   public void case2ALeft(Node<E> node) {
     if (node.getRight() != null && isLeafNode(node.getRight()) &&
         node.getLeft() != null && node.getLeft().getRight() != null &&
@@ -250,7 +236,6 @@ public class BinarySearchTree<E extends Comparable> {
       case2ALeftAction(node);
     }
   }
-
   public void case2BLeft(Node<E> node) {
     if (node.getRight() != null && isLeafNode(node.getRight()) &&
         node.getLeft() != null && node.getLeft().getLeft() != null &&
@@ -261,7 +246,6 @@ public class BinarySearchTree<E extends Comparable> {
       case2ALeftAction(node);
     }
   }
-
   public void case2BRight(Node<E> node) {
     if (node.getLeft() != null && isLeafNode(node.getLeft()) &&
         node.getRight() != null && node.getRight().getRight() != null &&
@@ -272,7 +256,6 @@ public class BinarySearchTree<E extends Comparable> {
       case2ARightAction(node);
     }
   }
-
   public void case2CLeft(Node<E> node) {
     if (node.getRight() != null && isLeafNode(node.getRight()) &&
         node.getLeft() != null && node.getLeft().getLeft() != null &&
@@ -284,7 +267,6 @@ public class BinarySearchTree<E extends Comparable> {
       case2ALeftAction(node);
     }
   }
-
   public void case2CRight(Node<E> node) {
     if (node.getLeft() != null && isLeafNode(node.getLeft()) &&
         node.getRight() != null && node.getRight().getRight() != null &&
@@ -296,15 +278,59 @@ public class BinarySearchTree<E extends Comparable> {
       case2ARightAction(node);
     }
   }
-
+  public void remove(E x) {
+    remove(x, root, null);
+    balance();
+  }
+  private void remove(E x, Node<E> node, Node<E> parent) {
+    if (node == null) {
+      return;
+    }
+    if (x.compareTo(node.get()) == 0) {
+      if (node.getLeft() == null && node.getRight() == null) {
+        // Node is a leaf
+        if (parent == null) {
+          root = null;
+        } else if (parent.getLeft() == node) {
+          parent.setLeft(null);
+        } else {
+          parent.setRight(null);
+        }
+      } else if (node.getLeft() != null && node.getRight() != null) {
+        // Node has two children
+        Node<E> successor = findMin(node.getRight());
+        node.set(successor.get());
+        remove(successor.get(), node.getRight(), node);
+      } else {
+        // Node has one child
+        Node<E> child = (node.getLeft() != null) ? node.getLeft() : node.getRight();
+        if (parent == null) {
+          root = child;
+        } else if (parent.getLeft() == node) {
+          parent.setLeft(child);
+        } else {
+          parent.setRight(child);
+        }
+        child.setParent(parent);
+      }
+    } else if (x.compareTo(node.get()) < 0) {
+      remove(x, node.getLeft(), node);
+    } else {
+      remove(x, node.getRight(), node);
+    }
+  }
+  private Node<E> findMin(Node<E> node) {
+    while (node.getLeft() != null) {
+      node = node.getLeft();
+    }
+    return node;
+  }
   public void clear() {
     root = null;
   }
-
   public void draw(Graphics g, int x, int y) {
     draw(g, root, x, y, 50);
   }
-
   private void draw(Graphics g, Node<E> node, int x, int y, int xOffset) {
     if (node != null) {
       g.drawString(node.get().toString(), x, y);

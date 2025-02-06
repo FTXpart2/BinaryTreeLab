@@ -10,7 +10,9 @@ public class Node<E> {
     this.right = null;
     this.parent = null;
   }
-
+  public void set(E data){
+    this.data = data;
+  }
   public E get() {
     return data;
   }
