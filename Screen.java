@@ -55,6 +55,7 @@ public class Screen extends JFrame {
             try {
                 double price = Double.parseDouble(JOptionPane.showInputDialog("Enter item price:"));
                 tree.add(new Item(name, price));
+                //Automatically balances the tree after adding an item
                 rebalanceTree();
                 updateDisplay();
             } catch (NumberFormatException e) {
